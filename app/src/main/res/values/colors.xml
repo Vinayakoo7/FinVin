@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors -->
+    <color name="colorPrimary">#ebebeb</color> <!-- Light Yellow (Dominant color) -->
+    <color name="colorPrimaryDark">#ebebeb</color> <!-- Beige (Darker version of the primary color) -->
+
+    <!-- Accent Colors -->
+    <color name="colorAccent">#FFC107</color> <!-- Amber (Accent for highlights/buttons) -->
+
+    <!-- Additional Colors for Modern UI -->
+    <color name="secondaryTextColor">#757575</color> <!-- Light Gray (For secondary text) -->
+    <color name="primaryTextColor">#212121</color> <!-- Dark Gray (For primary text) -->
+    <color name="buttonColor">#a59ecd</color> <!-- Green (For buttons like Add Expense) -->
+    <color name="backgroundColor">#ebebeb</color> <!-- Very Light Gray (Background color for main layout) -->
+
+    <!-- Colors for Progress Indicators and Highlights -->
+    <color name="progressBarColor">#03A9F4</color> <!-- Light Blue (Progress bar color) -->
+    <color name="warningColor">#D32F2F</color> <!-- Red (For warnings or alerts like overspending) -->
+
+    <!-- Utility Colors -->
+    <color name="colorWhite">#FFFFFF</color> <!-- White (General usage for backgrounds or text) -->
+</resources>
