@@ -216,7 +216,6 @@
                 android:layout_height="100dp"
                 android:layout_row="0"
                 android:layout_rowWeight="1"
-                android:layout_column="5"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 app:cardBackgroundColor="#eae1cf"

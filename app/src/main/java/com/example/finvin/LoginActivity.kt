@@ -11,8 +11,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 
 class LoginActivity : AppCompatActivity() {
 
@@ -23,94 +23,72 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Initialize buttons
-        val loginButton: Button = findViewById(R.id.loginButton)
-        loginButton.setOnClickListener {
-            // Redirect to Cognito Hosted UI for login
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://finvin.auth.ap-south-1.amazoncognito.com/oauth2/authorize?client_id=3e1ifha5vaqoqeeg28orddb3b3&response_type=code&scope=email+openid+phone&redirect_uri=com.example.finvin:/callback"))
-            startActivity(intent)
-        }
-
-        val registerButton: Button = findViewById(R.id.registerButton)
-        registerButton.setOnClickListener {
-            // Redirect to Cognito Hosted UI for registration
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://finvin.auth.ap-south-1.amazoncognito.com/oauth2/authorize?client_id=3e1ifha5vaqoqeeg28orddb3b3&response_type=code&scope=email+openid+phone&redirect_uri=com.example.finvin:/callback"))
-            startActivity(intent)
-        }
-
-        // Configure Google Sign-In options
+        // Configure Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("1038272972481-vjvddknf3vtiavfeldl3gr3abdgbvua2.apps.googleusercontent.com")  // Replace with your Google Client ID
+            .requestIdToken(getString(R.string.default_web_client_id)) // Ensure this ID is in strings.xml
             .requestEmail()
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        // Google Sign-In button
+        // Set up Google Sign-In button
         val googleSignInButton: Button = findViewById(R.id.googleSignInButton)
         googleSignInButton.setOnClickListener {
             signInWithGoogle()
         }
+
+        // AWS Cognito Hosted UI Login Button
+        val loginButton: Button = findViewById(R.id.loginButton)
+        loginButton.setOnClickListener {
+            val loginUri = Uri.parse(
+                "https://finvin.auth.ap-south-1.amazoncognito.com/oauth2/authorize" +
+                        "?client_id=3e1ifha5vaqoqeeg28orddb3b3" +
+                        "&response_type=code" +
+                        "&scope=email+openid+phone" +
+                        "&redirect_uri=com.example.finvin:/callback"
+            )
+            startActivity(Intent(Intent.ACTION_VIEW, loginUri))
+        }
     }
 
-    // Google Sign-In logic
+    // Handle Google Sign-In intent result
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            handleGoogleSignInResult(task)
+        }
+    }
+
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_SIGN_IN) {
-            val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleGoogleSignInResult(task)
-        }
-    }
-
     private fun handleGoogleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
-            if (account != null) {
-                val idToken = account.idToken
-                if (idToken != null) {
-                    authenticateWithCognito(idToken)
-                }
+            account?.idToken?.let { idToken ->
+                // Use the ID token to log in to AWS Cognito
+                authenticateWithCognito(idToken)
             }
         } catch (e: ApiException) {
-            Log.w("LoginActivity", "Google sign in failed", e)
-            Toast.makeText(this, "Google Sign-In Failed", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Google Sign-In Failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun authenticateWithCognito(idToken: String) {
-        // Replace this block with your Cognito authentication logic using the idToken
-        Toast.makeText(this, "Google Sign-In Success!", Toast.LENGTH_LONG).show()
-        // Proceed to the next activity
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
+        // Implement AWS Cognito login using the Google ID token
+        Log.d("LoginActivity", "Google ID Token: $idToken")
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
-    // Handle Cognito Hosted UI callback
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        val uri: Uri? = intent.data
-        if (uri != null && uri.toString().startsWith("com.example.finvin:/callback")) {
-            val code = uri.getQueryParameter("code")
-            if (code != null) {
-                // Use the authorization code to request tokens from Cognito
-                exchangeCodeForToken(code)
-            }
-        }
-    }
 
-
-    private fun exchangeCodeForToken(code: String) {
-        // You need to make a POST request to the Cognito /token endpoint to exchange the code for tokens.
-        // Example using OkHttp or Retrofit:
-        // POST to: https://finvin.auth.ap-south-1.amazoncognito.com/oauth2/token
-        // with parameters: grant_type=authorization_code, client_id, code, redirect_uri
-        Toast.makeText(this, "Received authorization code: $code", Toast.LENGTH_LONG).show()
-        // Add your logic here to exchange the code for tokens and handle success/failure
+    private fun exchangeCodeForToken(authCode: String) {
+        // Implement token exchange logic with AWS Cognito
+        Log.d("LoginActivity", "Auth Code: $authCode")
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }
